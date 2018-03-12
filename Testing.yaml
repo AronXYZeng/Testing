@@ -1,0 +1,2444 @@
+
+paths:
+  v1/auth/assert_to_idp:
+    get:
+      tags:
+        - auth
+      summary: Insert Summary
+      description: >-
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  open_activities:
+    post:
+      tags:
+        - activities
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/activities/(:num):
+    get:
+      tags:
+        - activities
+      summary: Gets activity data 
+      description: >-
+        - activityId must be provided 
+        
+        - it is not know yet when/where this API is called
+      operationId: activities/(:num)_get
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: activityId
+          description: activity ID to search for 
+          type: string
+          required: true
+      responses:
+        '200':
+          description: The data concerning the activity is returned in an array.
+          example: 
+            {
+              "activity_units": [
+        {
+            "activity_unit_id": "48",
+            "activity_unit_name": "km",
+            "activity_unit_singular": "km",
+            "activity_units_points": "61.8887"
+        },
+        {
+            "activity_unit_id": "49",
+            "activity_unit_name": "mins",
+            "activity_unit_singular": "min",
+            "activity_units_points": "8.3"
+        }
+    ],
+                "activity": {
+          "id": "40",
+          "name": "Running",
+          "show_in_dropdown": 1,
+          "show_in_user_interface": 1,
+          "private": 0,
+          "category_id": "7",
+          "cdl_id": "2"
+    }
+}
+          schema: 
+        '400':
+          description: This will occur if the activity id is zero or null
+          example: 
+          
+          schema:
+        '500':
+          description: Cannot find the cdl_id 
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/activities:
+    delete:
+      tags:
+        - activities
+      summary: Deletes an activity 
+      description: >-
+        - activity_id is defaulted to be null if it is not passed in the parameter 
+        
+        - if the activity_id is not passed as a query parameter, the method looks for it in the body and checks if it is a bulk delete request
+      operationId: activities_delete
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: activity_id
+          description: activity ID to search for
+          type: string
+          required: false
+      responses:
+        '204':
+          description: Successfully deleted an activity (nothing will be returned)
+        '400':
+          description: Missing activity_id. (Occurs when no activity ID was passed in the parameter and the body)
+          example: 
+            {
+            "errorCode": "missing_field",
+            "errorDetails": {
+          "fieldName": "id"
+    }
+}
+        '500':
+          description: Cannot find the cdl data (Occurs when an invalid activity ID is passed) or the activity ID passed has associated units. 
+          example: 
+            {    
+              "errorCode": "activity_has_units",
+              "errorDetails": "There are units associated to activity with id: 40"
+}
+        '403':
+          description: The user does not have the permission to delete an activity (must be an admin)
+          example: 
+            {
+              "errorCode": "action_forbidden"
+}
+      security:
+        - sprout_auth:
+            - 'read:users'
+    put:
+      tags:
+        - activities
+      summary: Updates an existing activity
+      description: >-
+        - the parameters are passed through the body
+        
+        - if "show_in_dropdown", "show_in_user_interface", or "private" if not passed in the body, those values will be changed to zero by default
+      operationId: activities_put
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id 
+          description: Activity ID to search for 
+          type: string
+          required: true
+        - in: path
+          name: category_id
+          description: Category ID to search for
+          type: string
+          required: true
+        - in: boby 
+          name: name 
+          description: The new or existing name of the activity 
+          type: string 
+          required: true 
+        - in: body 
+          name: show_in_dropdown 
+          description: The new or existing value for "show_in_dropdown"
+          type: string 
+          required: false 
+        - in: body 
+          name: private 
+          description: The new or existing value for "private"
+          type: string 
+          required: false 
+        - in: body 
+          name: show_in_user_interface
+          description: The new or existing value for "show_in_user_interface"
+          type: string 
+          required: false 
+        - in: body 
+          name: activityUnits 
+          description: The activity units for the activity (not known what it is used for yet)
+          type: not known 
+          required: false 
+        - in: body
+          name: cdl_id
+          description: The new or existing value for "cdl_id"
+          type: string 
+          required: false 
+      responses:
+        '201':
+          description: Activity successfully updated
+          example: 
+            {
+              "success": "activity_updated"
+}
+        '500':
+          description: This occurs if the cdl_id or name of the activity is not specified
+          example: 
+            {
+              "errorCode": "server_error",
+              "errorDetails": "We were unable to update activity  with id : 40"
+}
+      security:
+        - sprout_auth:
+            - 'read:users'
+    post:
+      tags:
+        - activities
+      summary: Creates a new activity
+      description: >-
+      
+      operationId: activities_post
+      produces:
+        - application/json
+      parameters:
+        - in: path 
+          name: category_id
+          description: Category ID to search for
+          type: string
+          required: true
+        - in: body 
+          name: id
+          description: Activity ID of the new activity
+          type: string
+          required: true 
+        - in: body 
+          name: name 
+          description: The name of the new activity 
+          type: string 
+          required: true 
+        - in: body 
+          name: show_in_dropdown
+          description: The value of "show_in_dropdown" of the new activity 
+          type: string 
+          required: false 
+        - in: body 
+          name: private 
+          description: The value of "private" of the new activity 
+          type: string 
+          required: false 
+        - in: body 
+          name: show_in_user_interface 
+          description: The value of "show_in_user_interface" of the new activity 
+          type: string 
+          required: false 
+        - in: body 
+          name: slug 
+          description: The value of "slug" of the new activity 
+          required: false 
+        - in: body
+          name: activityUnits
+          description: The value of activity units of the new activity (id, unit, unit_singular, slug, points, cdl_id)
+      responses:
+        '201':
+          description: The activity is successfully created
+          example: 
+            {
+              "success": "activity_created"
+}
+        '400': 
+          description: The category_id is not specified
+          example: 
+            {
+              "errorCode": "missing_parameter",
+              "errorDetails": {
+                  "parameterName": "activityCategoryId"
+    }
+}
+        '500':
+          description: >-
+            - This error will be presented if given an invalid category_id. 
+            
+            - This error will be presented if name is empty
+            
+            - This error will be presented if the activity_units table is not updated properly
+          example: 
+            {
+                "errorCode": "server_error",
+                "displayMessage": "",
+                "errorDetails": "CDL_DATA could not be found"
+}
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/activity_categories:
+    get:
+      tags:
+        - activities
+      summary: Gets activity categories and activities data
+      description: >-
+        - this API violates the guidelines because it does not pass query parameters 
+      produces:
+        - application/json
+      parameters:
+        - in: body 
+          name: partnerId
+          description: This is the partner ID that may be used to get the cdl_id to search for the activities / activity categories
+          type: string
+          required: false
+        - in: body
+          name: companyId
+          description: This is the company ID that may be used to get the cdl_id to search for the activities / activity categories 
+          type: string
+          required: false
+        - in: body 
+          name: requestType 
+          description: This tells the API if only the categories need to be retreived. The values can either be "categoryOnly" or empty 
+          type: string 
+          required: false 
+        - in: body
+          name: activityUnitIds 
+          description: Activity unit IDs that can be passed to specify which units are being searched
+          type: string 
+          required: false 
+        - in: body 
+          name: activityIds 
+          description: Activity IDs that can be passed to specify which activities are being searched 
+          type: string 
+          required: false 
+        - in: body 
+          name: categoryIds
+          description: Category IDs that can be passed to specify which categories are being searched 
+          type: string 
+          required: false 
+        - in: body
+          name: showInTracker 
+          description: Value for show_in_tracker (not yet known where it is being used). Its defaulted value will be set to false if not specified. 
+          type: string 
+          required: false 
+        - in: body 
+          name: showInLeaderboard 
+          description: Value for show_in_leaderboard (not yet known where it is being used). Its defaulted value will be set to false if not specified. 
+      responses:
+        '200':
+          description: >- 
+            - successfully gets all the activities and categories with/without using partnerId or companyId 
+              Note: 
+                - it is not yet known how the activities are searched if both partnerId and companyId are not specified 
+                - if both partnerId and companyId are given, partnerId is used to search for the cdl_id which is used to get the activities and categories
+            
+            
+            - successfully gets all the categories by searching with/without partnerId or companyId 
+              Note: 
+                - only categories are searched if requestType = "categoryOnly"
+                - if partnerId and companyId are both not specified then the categories are defaulted to be searched with a cdl_id of 1
+          example: 
+            [
+    {
+        "activityCategoryId": 300,
+        "activityCategoryDisplayName": "Cardio",
+        "activities": [
+            {
+                "activityId": 23691,
+                "activityName": "Cycling",
+                "visible": 1,
+                "activityUnits": [
+                    {
+                        "unitId": 0,
+                        "unitName": "",
+                        "unitSingular": "",
+                        "unitPoints": 0
+                    }
+                ]
+            },
+            {
+                "activityId": 2821,
+                "activityName": "Fitbit low",
+                "visible": 0,
+                "activityUnits": [
+                    {
+                        "unitId": 3343,
+                        "unitName": "mins",
+                        "unitSingular": "min",
+                        "unitPoints": 1.9
+                    }
+                ]
+            },
+            {
+                "activityId": 4108,
+                "activityName": "Jawbone work out calories",
+                "visible": 0,
+                "activityUnits": [
+                    {
+                        "unitId": 4764,
+                        "unitName": "calories",
+                        "unitSingular": "calories",
+                        "unitPoints": 10
+                    }
+                ]
+            },
+            {
+                "activityId": 2911,
+                "activityName": "Nike FuelBand low",
+                "visible": 0,
+                "activityUnits": [
+                    {
+                        "unitId": 2553,
+                        "unitName": "NikeFuel",
+                        "unitSingular": "NikeFuel",
+                        "unitPoints": 0.272727273
+                    },
+                    {
+                        "unitId": 3447,
+                        "unitName": "NikeFuel old",
+                        "unitSingular": "NikeFuel old",
+                        "unitPoints": 0
+                    }
+                ]
+            },
+            {
+                "activityId": 4107,
+                "activityName": "Jawbone movement",
+                "visible": 0,
+                "activityUnits": [
+                    {
+                        "unitId": 4763,
+                        "unitName": "Min",
+                        "unitSingular": "Min",
+                        "unitPoints": 5
+                    }
+                ]
+            }
+        ]
+    }
+  ]  
+        '400':
+          description: >-
+            - invalid partnerId or companyId used when searching for cdl_id
+              Note: 
+                - this can occur when you are searching for all activities or categories only (requestType = "categoryOnly")
+                
+            - activityUnitIds, activityIds, or categoryIds contain non-numeric value 
+              Note: 
+                - these are used in the "get_all_activities" function
+          example: 
+            {
+              "errorCode": "action_forbidden",
+              "errorDetails": "Not able to find company or partner!"
+}
+      security:
+        - sprout_auth:
+            - 'read:users'
+    put:
+      tags:
+        - activities
+      summary: Updates the name of an activity category
+      description: 
+      operationId: activity_categories_put
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: activityCategoryId
+          description: This is the ID of the activity category that is to be updated
+          type: string
+          required: true 
+        - in: body
+          name: name
+          description: The name that the activity category will be changed to 
+          type: string
+          required: true
+      responses:
+        '201':
+          description: The activity category was successfully updated
+          example: 
+            {
+    "success": "category_updated"
+}
+        '400':
+          description: >-
+            - This error occurs if either actvityCategoryId or name is not given in the body 
+          example: 
+            {
+              "errorCode": "name_empty",
+              "errorDetails": "Category ID is empty, unable to update category with out a ID"
+}
+        '403':
+          description: >-
+            - This error occurs when the API checks the access to the company (using the partner_id and company_id from the cdl data)
+            Note: 
+              - After retrieving the cdl data (using activityCategoryId) the API checks the access to the company
+              
+              - There is no known way to trigger this error
+              
+          example: 
+              {
+                "errorCode": "action_forbidden"
+  }
+        '500': 
+            description: >- 
+              - This error occurs if we get nothing after searching for CDL DATA (using activityCategoryId)
+              Note: 
+                - This may occur if an invalid "activityCategoryId" is passed in the body
+              - This error occurs if "update_activity_category" does not output anything 
+              Note: 
+                - There is no known way to trigger this error
+            example: 
+              {
+                "errorCode": "server_error",
+                "displayMessage": "",
+                "errorDetails": "CDL_DATA could not be found"
+}
+      security:
+        - sprout_auth:
+            - 'read:users'
+    post:
+      tags:
+        - activities
+      summary: Creates a new activity category 
+      description: >-
+        - either partnerId or companyId is required 
+      operationId: activity_categories_post
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: companyId          
+          description: Company ID that may be used to search for the cdl_id
+          type: string
+          required: true
+        - in: body
+          name: partnerId
+          description: Partner ID that may be used to search for the cdl_id (if both companyId and partnerId are passed in the body, partnerId will be used to search for the cdl_id)
+          type: string
+          required: true
+        - in: body 
+          name: name
+          description: The name of the new activity category (can't already be an existing category name)
+          type: string 
+          required: true
+      responses:
+        '201':
+          description: The activity category has been created
+          example: 
+            {
+              "success": "activity_category_created"
+}
+        '400':
+          description: >-
+            - This error occurs when no name is passed in the body
+            
+            - This error occurs if the name of the category being add already exists for that cdl_id
+          example: 
+            {
+              "errorCode": "name_empty",
+              "errorDetails": "Category Name is empty"
+}
+        '500': 
+          description: >- 
+            - This error occurs if there is a problem finding the cdl_id (which can occur if partnerId/companyId are not provided or invalid)
+            
+            - This error occurs if there is a problem with adding the activity category (which is done through the "set_category_default" function)
+          example: 
+            {
+              "errorCode": "server_error",
+              "errorDetails": "CDL_ID could not be found"
+}
+      security:
+        - sprout_auth:
+            - 'read:users'
+    delete:
+      tags:
+        - activities
+      summary: Deletes an activity category
+      description: >-
+        - The category_id is passed through the third segment of the uri 
+      operationId: activity_categories_delete
+      produces:
+        - application/json
+      parameters:
+        - in: query 
+          name: categoryId
+          description: The ID of the category that is to be deleted
+          type: string
+          required: true
+      responses:
+        '204':
+          description: The activity category has been successfully deleted
+          example: 
+            {
+              "success": "category_deleted"
+}
+        '400':
+          description: The category_id has not been indicated
+          example: 
+            {
+              "errorCode": "missing_field",
+              "errorDetails": "Category Id not provided"
+}
+        '403': 
+          description: >-
+            - There was an error when checking access (using the cdl_data which is obtained through the category_id)
+              Note: 
+              - This error would occur after the "check_access_to_company" function is executed
+          example: 
+            {
+              "errorCode": "action_forbidden"
+            }
+        '500': 
+          description: >- 
+            - This error occurs if we the cdl data gotten through categoryId is empty
+            
+            - This error occurs the activity category, that you are trying to delete, contains activities within it 
+            
+            - This error occurs if the activity category deletion does not go through ("delete_activity_category" function)
+          example: 
+            {
+              "errorCode": "category_has_activities",
+              "errorDetails": "There are activities associated to category with id: 7"
+}
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/activity_logs/([0-9]+):
+    get:
+      tags:
+        - activities
+      summary: Gets the user's activity log data
+      description: >-
+        - The userId is gotten from the third segment of the URI
+      operationId: activity_logs_get
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: timePeriodId
+          description: Find out what this represents
+          type: string
+          required: true
+        - in: query
+          name: idGreaterThan 
+          description: Find out what this represents 
+          type: string
+          required: true 
+        - in: query 
+          name: idLessThan 
+          description: Find out what this represents 
+          type: string 
+          required: true 
+        - in: query 
+          name: maxCount 
+          description: Find out what this represents 
+          type: string 
+          required: true 
+      responses:
+        '200':
+          description: successful operation
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+    
+    post:
+      tags:
+        - activities
+      summary: Creates a new activity log
+      description: 
+      operationId: activity_logs_post
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: activities
+          description: An array containing the activity data (date, activityUnitId, quantity, target_user_id, ShareWithFilterId) "date" , "activityUnitId" and "quantity" are required.
+          type: array
+          required: true 
+        - in: body
+          name: text
+          description: The text that a user may submit to accompany the post (i.e when they write about the activity that they trakced. This data is known to be stored in the "streams" table of the database. 
+          type: string
+          required: false
+        - in: body 
+          name: image 
+          description: An image that can be attached when making a tracking an activity. 
+          type: JPEG, PNG, GIF
+          required: false 
+      responses:
+        '201':
+          description: The activity log has been created. It returns the "steamItemId" and "activityLogId(s)"
+          example: 
+            {
+              "streamItemId": 1592550,
+              "activityLogItemIds": [
+                  {
+                      "activityLogId": 2599160
+        }
+    ]
+}
+        '400':
+          description: >-
+            - This error occurs if "activities", "date", "activityUnitId" or "quantity" are empty 
+            
+            - This error occurs if "date", "activityUnitId", or "quantity" are provided in an unexpected data type 
+            
+            - This error occurs if "activities" is not an array
+            
+            - This error occurs if "shareWithFilterId" is an invalid value 
+            
+            - This error occurs if the image passed in the body is exceeds the max file size or the image cannot be decoded 
+              Note: 
+                - These responses are found in the "upload_photo" function which is called in by this API
+          example: 
+            {
+              "errorCode": "invalid_field_value_type",
+              "errorDetails": {
+                  "fieldName": "",
+                  "expectedType": "array",
+                  "suppliedType": "non-array"
+    }
+}
+        '403': 
+          description: >- 
+            - This error occurs if 
+    delete:
+      tags:
+        - activities
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: activity_logs_delete
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/activity_logs/step_averages:
+    get:
+      tags:
+        - activities
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: activity_logs_step_averages_get
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/challenges/([0-9]+)/entities/([0-9]+)/users:
+    get:
+      tags:
+        - challenges
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/challenges/([0-9]+)/teams:
+    post:
+      tags:
+        - challenges
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/challenges:
+    get:
+      tags:
+        - challenges
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+    post:
+      tags:
+        - challenges
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/challenges/recommendations:
+    get:
+      tags:
+        - challenges
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/challenges/teams/([0-9]+)/invites:
+    post:
+      tags:
+        - challenges
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/challenges/teams/accepts/([0-9]+):
+    get:
+      tags:
+        - challenges
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/challenges/user_challenges:
+    get:
+      tags:
+        - challenges
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/companies:
+    get:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+    put:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+    post:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/companies/(:num)/departments:
+    get:
+      tags:
+        - companies 
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+    put:
+      tags:
+        - companies 
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+    post:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+    delete:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/companies/(:num)/features:
+    get:
+      tags:
+        - companies 
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+    put:
+      tags:
+        - companies 
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/companies/(:num)/locations:
+    get:
+      tags:
+        - companies 
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+    put:
+      tags:
+        - companies 
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+    post:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+    delete:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/companies/(:num)/regions:
+    get:
+      tags:
+        - companies 
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+    put:
+      tags:
+        - companies 
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+    post:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+    delete:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/companies/(:num)/structure/import:
+    post:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+    delete:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/companies/(:num)/superlogin:
+    get:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/companies/(:num)/welcome_flow:
+    get:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/companies/(:num)/welcome_steps:
+    get:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/companies/([0-9]+)/agreements/disclaimer:
+    get:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+    put:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/companies/([0-9]+)/agreements/privacy:
+    get:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/companies/([0-9]+)/agreements/terms:
+    get:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/companies/([0-9]+)/users:
+    get:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/companies/countries_cities:
+    get:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/companies/countries_provinces:
+    get:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/companies/timezones:
+    get:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/companies/users:
+    get:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/companies/(.*):
+    get:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+    put:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+    post:
+      tags:
+        - companies
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
+  v1/feedback:
+    post:
+      tags:
+        - feedback
+      summary: Insert Summary
+      description: >-
+        All operations pertaining to Sprout users require a Sprout UserID.
+        This method allows an external system connected to Sprout (for
+        example, via OAUTH) to lookup the Sprout UserID given an external
+        user-id that is specific to the external system. This mapping is created
+        when the user links the Sprout account with the external account
+        provider. An example is when the user uses Facebook SSO to login to
+        Sprout, the user's Facebook ID is linked to the Sprout UserID.
+        - Either email or extId query parameter must be provided.
+      operationId: usersLookup
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: email address to search for - be sure to URL encode the address
+          type: string
+          required: false
+        - in: query
+          name: extId
+          description: external ID to search for
+          type: string
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/LookupUser'
+        '404':
+          description: Cannot find user
+      security:
+        - sprout_auth:
+            - 'read:users'
